@@ -74,18 +74,37 @@ sub calcSubnet {
 	my @basic_address = ($first_octet, $second_octet, $third_octet, $fourth_octet);
 	
 	my $pattern = 0b11111111111111111111111111111111;
+	my $pattern_second_octet = 0b11111111000000000000000000000000;
+	my $pattern_third_octet = 0b11111111111111110000000000000000;
+	my $pattern_fourth_octet = 0b11111111111111111111111100000000;
 	my $bitmask = $_[1];
-	my $shift_left = $pattern >> (32 - $bitmask);
-	my $netmask = $shift_left << $bitmask;
+	my $shift_mask_left = $pattern >> (32 - $bitmask);
+	my $netmask = $shift_mask_left << $bitmask;
+	$netmask = $netmask << (32 - ($bitmask * 2));
 	printf("%b - netmask\n", $netmask);
 	
-	my @swap = (0b0, 0b0, 0b0, 0b0);
-	my $shift = 0; 
-	if ($_[1] > 8 && $_[1] <= 16) {
-		$shift = 16;
+	my @octets = (0b0, 0b0, 0b0, 0b0); 
+	$octets[0] = $netmask >> 24;
+	if ($_[1] > 8) {		
+		$octets[1] = $netmask ^ $pattern_second_octet;
+		$octets[1] = $octets[1] << 8;
+		$octets[1] = $octets[1] >> 24;
+		
+		if ($_[1] > 16) {
+			$octets[2] = $netmask ^ $pattern_third_octet;
+			$octets[2] = $octets[2] << 16;
+			$octets[2] = $octets[2] >> 24;
+		}
+		if ($_[1] > 24) {	
+			$octets[3] = $netmask ^ $pattern_fourth_octet;
+			$octets[3] = $octets[3] << 24;
+			$octets[3] = $octets[3] >> 24;
+		}
 	} 
-	$swap[0] = $netmask >> $shift;
-	printf ("%b - oktet\n", $swap[0]);
+	printf ("%b - first oktet\n", $octets[0]);
+	printf ("%b - second oktet\n", $octets[1]);
+	printf ("%b - third oktet\n", $octets[2]);
+	printf ("%b - fourth oktet\n", $octets[3]);
 	
 	#my $a = $_[0];
 	#print "$a\n";
