@@ -53,7 +53,7 @@ while (my $line = <CONFIG>) {
         #find subnet
         if ($line =~ /.\//) {
             print "SUBNET THERE $line";
-            my ($subnet, $bitmask) = split("\/", $line);
+            my ($subnet, $bitmask) = split(/\//, $line);
             print "net - $subnet; mask - $bitmask";
 			calcSubnet($subnet, $bitmask);
         }
@@ -66,17 +66,20 @@ while (my $line = <CONFIG>) {
 sub ping {
 	if ($net->ping($_[0], 5)) {
         print "$_[0]($_[1]) now is UP\n";
-    }
+    } else {
+		print "$_[0]($_[1]) now is DOWN\n";
+	}
 }
 
 sub calcSubnet {
-	my ($first_octet, $second_octet, $third_octet, $fourth_octet) = split("\.", $_[0]);
+	my ($first_octet, $second_octet, $third_octet, $fourth_octet) = split(/\./, $_[0]);
 	my @basic_address = ($first_octet, $second_octet, $third_octet, $fourth_octet);
 	
 	my $pattern = 0b11111111111111111111111111111111;
 	my $pattern_second_octet = 0b11111111000000000000000000000000;
 	my $pattern_third_octet = 0b11111111111111110000000000000000;
 	my $pattern_fourth_octet = 0b11111111111111111111111100000000;
+	
 	my $bitmask = $_[1];
 	my $shift_mask_left = $pattern >> (32 - $bitmask);
 	my $netmask = $shift_mask_left << $bitmask;
@@ -106,11 +109,22 @@ sub calcSubnet {
 	printf ("%b - third oktet\n", $octets[2]);
 	printf ("%b - fourth oktet\n", $octets[3]);
 	
-	#my $a = $_[0];
+	my @result_address = (0b0, 0b0, 0b0, 0b0);
+	$result_address[0] = $first_octet;
+	$result_address[1] = $second_octet;
+	$result_address[2] = $third_octet;
+	$result_address[3] = $fourth_octet;
+	
+	$result_address[3] = $bitmask - 24;
+	
+	
+	printf ("%b\.%b\.%b\.\n", $result_address[0], $result_address[1], $result_address[2]);
+	
+	#my $a = 0b10000011;
 	#print "$a\n";
-	#my $b = $_[1];
+	#my $b = 0b00000001;
 	#print "$b\n";
-	#my $c = $_[0] | $_[1];
+	#my $c = $a + $b;
 	#printf("%b \n", $c);
 }
 
