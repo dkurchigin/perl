@@ -52,28 +52,31 @@ while (my $line = <CONFIG>) {
     if ($line !~ /^#/) {
         #find subnet
         if ($line =~ /.\//) {
-            print "SUBNET THERE $line";
             my ($subnet, $bitmask) = split(/\//, $line);
             print "net - $subnet; mask - $bitmask";
-			calcSubnet($subnet, $bitmask);
+			#calcSubnet($subnet, $bitmask);
         }
         my ($address, $description) = split(" ", $line);
 	    print "$address\n";
-	    #ping($address, $description);
+	    ping($address, $description);
     }
 }
 
 sub ping {
 	if ($net->ping($_[0], 5)) {
-        print "$_[0]($_[1]) now is UP\n";
+		if ($show_connected == 1) {
+			print "$_[0]($_[1])\t now is UP\n";
+		}
     } else {
-		print "$_[0]($_[1]) now is DOWN\n";
+		if ($show_disconnected == 1) {
+			print "$_[0]($_[1])\t now is DOWN\n";
+		}
 	}
 }
 
 sub calcSubnet {
 	my ($first_octet, $second_octet, $third_octet, $fourth_octet) = split(/\./, $_[0]);
-	my @basic_address = ($first_octet, $second_octet, $third_octet, $fourth_octet);
+	#my @basic_address = ($first_octet, $second_octet, $third_octet, $fourth_octet);
 	
 	my $pattern = 0b11111111111111111111111111111111;
 	my $pattern_second_octet = 0b11111111000000000000000000000000;
@@ -104,21 +107,24 @@ sub calcSubnet {
 			$octets[3] = $octets[3] >> 24;
 		}
 	} 
-	printf ("%b - first oktet\n", $octets[0]);
-	printf ("%b - second oktet\n", $octets[1]);
-	printf ("%b - third oktet\n", $octets[2]);
-	printf ("%b - fourth oktet\n", $octets[3]);
-	
-	my @result_address = (0b0, 0b0, 0b0, 0b0);
-	$result_address[0] = $first_octet;
-	$result_address[1] = $second_octet;
-	$result_address[2] = $third_octet;
-	$result_address[3] = $fourth_octet;
-	
-	$result_address[3] = $bitmask - 24;
+	#printf ("%b - first oktet\n", $octets[0]);
+	#printf ("%b - second oktet\n", $octets[1]);
+	#printf ("%b - third oktet\n", $octets[2]);
+	#printf ("%b - fourth oktet\n", $octets[3]);
 	
 	
-	printf ("%b\.%b\.%b\.\n", $result_address[0], $result_address[1], $result_address[2]);
+	my $sum = 2 ** (8 - ($bitmask - 24));
+	print "$sum \n";
+	$fourth_octet = 0b00000000;
+	for (my $n = 1; $n <= $sum; $n++) {
+		$fourth_octet = $fourth_octet + 0b00000001;
+		my $result_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
+		print "$result_address \n";
+		#printf ("%d\n", $a);
+	}
+	
+	#ping("", $description)
+	#printf ("%b\.%b\.%b\.\n", $result_address[0], $result_address[1], $result_address[2]);
 	
 	#my $a = 0b10000011;
 	#print "$a\n";
