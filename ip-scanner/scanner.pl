@@ -126,37 +126,37 @@ sub calcSubnet {
 	#printf ("%b -res\n", $third_octet);
 	
 	
-	for (my $n = 0; $n < 1; $n++) {
-		print "$n - n\n";
-		for (my $k = 0; $k < 255 % ($sum - (255 * $n)); $k++) {
+	#for (my $n = 0; $n < int $sum / (256 * 256 * 256); $n++) {
+	#	print "$n - n\n";
+		#for (my $k = 0; $k < int $sum / (256 * 256); $k++) {
 			#print "$k - k\n";
-			for (my $j = 0; $j < 255 % ($sum - (255 * $k)); $j++) {
-				#print "$j - j\n";
+			for (my $j = 0; $j < int $sum / 256; $j++) {
+				print "$j - j\n";
 				for (my $i = 0; $i < 255 % ($sum - (255 * $j)); $i++ ) {
 					#print "$i - i\n";
-					if ($i == 0 && $j == 0 && $k == 0) {
+					if ($i == 0 && $j == 0) {
 						$first_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
 					}
 					$fourth_octet = $fourth_octet + 0b00000001;
 					my $result_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
-					print "$result_address \n";
+					print "$result_address -res\n";
 				}
 				$third_octet = $third_octet + 0b00000001;
 				$fourth_octet = 0b0;
 				#my $result_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
 				#print "$result_address \n";
 			}
-			$second_octet = $second_octet + 0b00000001;
-			$third_octet = 0b0;
+			#$second_octet = $second_octet + 0b00000001;
+			#$third_octet = 0b0;
 			#my $result_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
 			#print "$result_address \n";
-		}
-		$first_octet = $first_octet + 0b00000001;
+		#}
+		#$first_octet = $first_octet + 0b00000001;
 		#$second_octet = 0b0;
-	}
+	#}
 	print "$sum -sum\n";
 	print "$first_address -first\n";
-		my $tt = 255 % 300;
+		my $tt = int 128 / 256;
 	print "$tt tt\n";
 	
 	
