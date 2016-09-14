@@ -129,7 +129,7 @@ sub calcSubnet {
 	for (my $n = 0; $n < 1; $n++) {
 		print "$n - n\n";
 		for (my $k = 0; $k < 255 % ($sum - (255 * $n)); $k++) {
-			print "$k - k\n";
+			#print "$k - k\n";
 			for (my $j = 0; $j < 255 % ($sum - (255 * $k)); $j++) {
 				#print "$j - j\n";
 				for (my $i = 0; $i < 255 % ($sum - (255 * $j)); $i++ ) {
@@ -138,13 +138,13 @@ sub calcSubnet {
 						$first_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
 					}
 					$fourth_octet = $fourth_octet + 0b00000001;
-					#my $result_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
-					#print "$result_address \n";
+					my $result_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
+					print "$result_address \n";
 				}
 				$third_octet = $third_octet + 0b00000001;
 				$fourth_octet = 0b0;
-				my $result_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
-				print "$result_address \n";
+				#my $result_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
+				#print "$result_address \n";
 			}
 			$second_octet = $second_octet + 0b00000001;
 			$third_octet = 0b0;
