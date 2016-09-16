@@ -113,81 +113,34 @@ sub calcSubnet {
 	my $sum = 2 ** (8 - ($bitmask - 24));
 	#if ($_[1] > 16 && $_[1] <= 24) {
 	
-	print "this!\n";
-	$first_octet = $first_octet >> (8 - $bitmask);
-	$first_octet = $first_octet << (8 - $bitmask);
-	$second_octet = $second_octet >> (8 - ($bitmask - 8));
-	$second_octet = $second_octet << (8 - ($bitmask - 8));
-	$third_octet = $third_octet >> (8 - ($bitmask - 16));
-	$third_octet = $third_octet << (8 - ($bitmask - 16));
-	$fourth_octet = $fourth_octet >> (8 - ($bitmask - 24));
-	$fourth_octet = $fourth_octet << (8 - ($bitmask - 24));
-	my $first_address;
-	#printf ("%b -res\n", $third_octet);
-	
-	
-	#for (my $n = 0; $n < int $sum / (256 * 256 * 256); $n++) {
-	#	print "$n - n\n";
-		#for (my $k = 0; $k < int $sum / (256 * 256); $k++) {
-			#print "$k - k\n";
-			for (my $j = 0; $j < int $sum / 256; $j++) {
-				print "$j - j\n";
-				for (my $i = 0; $i < 255 % ($sum - (255 * $j)); $i++ ) {
-					#print "$i - i\n";
-					if ($i == 0 && $j == 0) {
-						$first_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
-					}
-					$fourth_octet = $fourth_octet + 0b00000001;
-					my $result_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
-					print "$result_address -res\n";
-				}
-				$third_octet = $third_octet + 0b00000001;
-				$fourth_octet = 0b0;
-				#my $result_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
-				#print "$result_address \n";
-			}
-			#$second_octet = $second_octet + 0b00000001;
-			#$third_octet = 0b0;
-			#my $result_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
-			#print "$result_address \n";
-		#}
-		#$first_octet = $first_octet + 0b00000001;
-		#$second_octet = 0b0;
+	$fourth_octet = 0b00010001; ##здесь адрес из диапазона
+	printf ("%b - 4\n", $fourth_octet);
+	my $first_fourth_octet = $fourth_octet >> (32 - $bitmask);
+	$first_fourth_octet = $first_fourth_octet << (32 - $bitmask);
+	printf ("%b - 4?\n", $fourth_octet);
+	my $last_fourth_octet = $first_fourth_octet ^ $octets[3];
+	printf ("%b - last fourth oktet\n", $last_fourth_octet);
+	printf ("%b - mask fourth oktet\n", $octets[3]);
+	printf ("%b - 4\n", $first_fourth_octet);
+	printf ("%b - 4\n", $fourth_octet);
+	#if ($last_fourth_octet != $octets[3]) {
+	#	print "stop!\n";
+	#} else {
+	#	$fourth_octet = $fourth_octet + 0b00000001;		
 	#}
-	print "$sum -sum\n";
-	print "$first_address -first\n";
-		my $tt = int 128 / 256;
-	print "$tt tt\n";
+	$fourth_octet = $first_fourth_octet;
+	while ($last_fourth_octet == $octets[3]) {
+		printf ("%d - 4\n", $fourth_octet);
+		$first_fourth_octet = $fourth_octet >> (32 - $bitmask);
+		$first_fourth_octet = $first_fourth_octet << (32 - $bitmask);
+		$last_fourth_octet = $first_fourth_octet ^ $octets[3];
+		if ($last_fourth_octet != $octets[3]) {
+			print "stop!\n";
+		} else {
+			$fourth_octet = $fourth_octet + 0b00000001;	
+		}
+	}
 	
-	
-	
-		#for (my $n = 1; $n <= $sum - 1; $n++) {
-			#if ($n <= 255) {
-				#$third_octet = $third_octet + 0b00000001;
-			#} els
-		#	if ($fourth_octet < 255) {
-		#		$fourth_octet = $fourth_octet + 0b00000001;
-		#		my $result_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
-		#		print "$result_address \n";
-		#	} else {
-		#		$third_octet = $third_octet + 0b00000001;
-		#		$fourth_octet = 0b0;
-		#	}
-		#}
-	#} #elsif ($_[1] > 24) {
-	#	print "lol! \n";
-	#	$fourth_octet = $fourth_octet >> (8 - ($bitmask - 24));
-	#	$fourth_octet = $fourth_octet << (8 - ($bitmask - 24));
-	#	my $network = $fourth_octet;
-	#	printf ("%b -res\n", $fourth_octet);
-	#	for (my $n = 1; $n <= $sum - 1; $n++) {
-	#		if ($network != $fourth_octet) {
-	#			my $result_address = "$first_octet.$second_octet.$third_octet.$fourth_octet";
-	#			print "$result_address \n";
-	#		}
-	#		$fourth_octet = $fourth_octet + 0b00000001;
-	#	}
-	#}
 	
 	#ping("", $description)
 	#printf ("%b\.%b\.%b\.\n", $result_address[0], $result_address[1], $result_address[2]);
