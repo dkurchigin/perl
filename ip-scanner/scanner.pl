@@ -81,6 +81,7 @@ sub calcSubnet {
 	my $pattern_second_octet = 0b11111111000000000000000000000000;
 	my $pattern_third_octet = 0b11111111111111110000000000000000;
 	my $pattern_fourth_octet = 0b11111111111111111111111100000000;
+	my $pattern_simple = 0b11111111;
 	
 	my $bitmask = $_[1];
 	my $shift_mask_left = $pattern >> (32 - $bitmask);
@@ -113,33 +114,19 @@ sub calcSubnet {
 	my $sum = 2 ** (8 - ($bitmask - 24));
 	#if ($_[1] > 16 && $_[1] <= 24) {
 	
-	$fourth_octet = 0b00010001; ##здесь адрес из диапазона
-	printf ("%b - 4\n", $fourth_octet);
-	my $first_fourth_octet = $fourth_octet >> (32 - $bitmask);
-	$first_fourth_octet = $first_fourth_octet << (32 - $bitmask);
-	printf ("%b - 4?\n", $fourth_octet);
-	my $last_fourth_octet = $first_fourth_octet ^ $octets[3];
-	printf ("%b - last fourth oktet\n", $last_fourth_octet);
-	printf ("%b - mask fourth oktet\n", $octets[3]);
-	printf ("%b - 4\n", $first_fourth_octet);
-	printf ("%b - 4\n", $fourth_octet);
-	#if ($last_fourth_octet != $octets[3]) {
-	#	print "stop!\n";
-	#} else {
-	#	$fourth_octet = $fourth_octet + 0b00000001;		
-	#}
-	$fourth_octet = $first_fourth_octet;
-	while ($last_fourth_octet == $octets[3]) {
-		printf ("%d - 4\n", $fourth_octet);
-		$first_fourth_octet = $fourth_octet >> (32 - $bitmask);
-		$first_fourth_octet = $first_fourth_octet << (32 - $bitmask);
-		$last_fourth_octet = $first_fourth_octet ^ $octets[3];
-		if ($last_fourth_octet != $octets[3]) {
-			print "stop!\n";
-		} else {
-			$fourth_octet = $fourth_octet + 0b00000001;	
-		}
+	$fourth_octet = 0b00110001; ##здесь адрес из диапазона
+	my @initial_address = ($first_octet, $second_octet, $third_octet, $fourth_octet);
+	printf ("%d - current 4\n", $fourth_octet);
+	$initial_address[3] = $initial_address[3] >> (32 - $bitmask);
+	$initial_address[3] = $initial_address[3] << (32 - $bitmask);
+	my @max_address = ($first_octet, $second_octet, $third_octet, $fourth_octet);
+	$max_address[3] = $initial_address[3] + ($pattern_simple ^ $octets[3]);
+	printf ("%d - initial 4\n", $initial_address[3]);
+	printf ("%d - max 4\n", $max_address[3]);
+	for (my $fourth = $initial_address[3]; $fourth <= $max_address[3]; $fourth = $fourth + 0b00000001) {
+		printf ("%d - 4\n", $fourth);
 	}
+	
 	
 	
 	#ping("", $description)
