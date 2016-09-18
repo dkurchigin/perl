@@ -144,9 +144,7 @@ sub calcSubnet {
 						printf ("%d.%d.%d.%d - 1 2 3 4\n", $first, $second, $third, $fourth);
 					}
 				}
-				#printf ("%d.%d.%d - 1 2 3\n", $first, $second, $third);
 			}
-			#printf ("%d.%d - 1 2 \n", $first, $second);
 		}
 	}
 }
