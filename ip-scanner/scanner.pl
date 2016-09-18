@@ -91,53 +91,64 @@ sub calcSubnet {
 	
 	my @octets = (0b0, 0b0, 0b0, 0b0); 
 	$octets[0] = $netmask >> 24;
-	if ($_[1] > 8) {		
+	if ($bitmask > 8) {		
 		$octets[1] = $netmask ^ $pattern_second_octet;
 		$octets[1] = $octets[1] << 8;
 		$octets[1] = $octets[1] >> 24;
-		if ($_[1] > 16) {
+		if ($bitmask > 16) {
 			$octets[2] = $netmask ^ $pattern_third_octet;
 			$octets[2] = $octets[2] << 16;
 			$octets[2] = $octets[2] >> 24;
 		}
-		if ($_[1] > 24) {	
+		if ($bitmask > 24) {	
 			$octets[3] = $netmask ^ $pattern_fourth_octet;
 			$octets[3] = $octets[3] << 24;
 			$octets[3] = $octets[3] >> 24;
 		}
 	} 
-	#printf ("%b - first oktet\n", $octets[0]);
-	#printf ("%b - second oktet\n", $octets[1]);
-	#printf ("%b - third oktet\n", $octets[2]);
-	#printf ("%b - fourth oktet\n", $octets[3]);
-	
-	my $sum = 2 ** (8 - ($bitmask - 24));
-	#if ($_[1] > 16 && $_[1] <= 24) {
-	
-	$fourth_octet = 0b00110001; ##здесь адрес из диапазона
+
 	my @initial_address = ($first_octet, $second_octet, $third_octet, $fourth_octet);
-	printf ("%d - current 4\n", $fourth_octet);
-	$initial_address[3] = $initial_address[3] >> (32 - $bitmask);
-	$initial_address[3] = $initial_address[3] << (32 - $bitmask);
 	my @max_address = ($first_octet, $second_octet, $third_octet, $fourth_octet);
-	$max_address[3] = $initial_address[3] + ($pattern_simple ^ $octets[3]);
-	printf ("%d - initial 4\n", $initial_address[3]);
-	printf ("%d - max 4\n", $max_address[3]);
-	for (my $fourth = $initial_address[3]; $fourth <= $max_address[3]; $fourth = $fourth + 0b00000001) {
-		printf ("%d - 4\n", $fourth);
+	
+	if ($bitmask < 8) {
+		$initial_address[0] = $initial_address[0] >> (8 - $bitmask);
+		$initial_address[0] = $initial_address[0] << (8 - $bitmask);
+		$max_address[0] = $initial_address[0] + ($pattern_simple ^ $octets[0]);
+		$initial_address[1] = $initial_address[2] = $initial_address[3] = 0b00000000;
+		$max_address[1] = $max_address[2] = $max_address[3] = 0b11111111;
+	} elsif ($bitmask >= 8 && $bitmask < 16) {
+		$initial_address[1] = $initial_address[1] >> (16 - $bitmask);
+		$initial_address[1] = $initial_address[1] << (16 - $bitmask);
+		$max_address[1] = $initial_address[1] + ($pattern_simple ^ $octets[1]);
+		$initial_address[2] = $initial_address[3] = 0b00000000;
+		$max_address[2] = $max_address[3] = 0b11111111;
+	} elsif ($bitmask >= 16 && $bitmask < 24) {
+		$initial_address[2] = $initial_address[2] >> (24 - $bitmask);
+		$initial_address[2] = $initial_address[2] << (24 - $bitmask);
+		$max_address[2] = $initial_address[2] + ($pattern_simple ^ $octets[2]);
+		$initial_address[3] = 0b00000000;
+		$max_address[3] = 0b11111111;
+	} elsif ($bitmask >= 24) {
+		$initial_address[3] = $initial_address[3] >> (32 - $bitmask);
+		$initial_address[3] = $initial_address[3] << (32 - $bitmask);
+		$max_address[3] = $initial_address[3] + ($pattern_simple ^ $octets[3]);
 	}
 	
-	
-	
-	#ping("", $description)
-	#printf ("%b\.%b\.%b\.\n", $result_address[0], $result_address[1], $result_address[2]);
-	
-	#my $a = 0b10000011;
-	#print "$a\n";
-	#my $b = 0b00000001;
-	#print "$b\n";
-	#my $c = $a + $b;
-	#printf("%b \n", $c);
+	for (my $first = $initial_address[0]; $first <= $max_address[0]; $first = $first + 0b00000001) {
+		for (my $second = $initial_address[1]; $second <= $max_address[1]; $second = $second + 0b00000001) {
+			for (my $third = $initial_address[2]; $third <= $max_address[2]; $third = $third + 0b00000001) {
+				for (my $fourth = $initial_address[3]; $fourth <= $max_address[3]; $fourth = $fourth + 0b00000001) {
+					#printf ("%d.%d.%d.%d - 1 2 3 4\n", $first, $second, $third, $fourth);
+					if (($fourth != $initial_address[3]) || ($third != $initial_address[2] && $third != $initial_address[3]) || ($second != $initial_address[1] && $second != $initial_address[2] && $second != $initial_address[3]) || ($first != $initial_address[0] && $first != $initial_address[1] && $first != $initial_address[2] && $first != $initial_address[3])) {
+						#ping("$first.$second.$third.$fourth");
+						printf ("%d.%d.%d.%d - 1 2 3 4\n", $first, $second, $third, $fourth);
+					}
+				}
+				#printf ("%d.%d.%d - 1 2 3\n", $first, $second, $third);
+			}
+			#printf ("%d.%d - 1 2 \n", $first, $second);
+		}
+	}
 }
 
 print "Press any key";
