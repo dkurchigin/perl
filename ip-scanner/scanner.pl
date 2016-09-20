@@ -5,8 +5,7 @@ use Net::Ping;
 
 my $config_file = "ip_list";
 
-my $echo_number = 3;
-my $time_out = 10; 
+my $time_out = 3; 
 my $show_connected = 1;
 my $show_disconnected = 1;
 
@@ -32,10 +31,6 @@ for (my $i=0; $i <= $#ARGV; $i++) {
     if ($command eq "-c") {
         $config_file = $value;
     }
-    #echo count
-    if ($command eq "-e") {
-	    $echo_number = $value;
-    }
     #set timeout
     if ($command eq "-t") {
 	    $time_out = $value;
@@ -43,27 +38,25 @@ for (my $i=0; $i <= $#ARGV; $i++) {
 }
 
 #hash for the address list
-my %addresses;
 open(CONFIG, $config_file) or die "Can't open file - $config_file!\n";
 my $net = Net::Ping->new("icmp");
 #read line by line
 while (my $line = <CONFIG>) {
     #ignore lines with comments
     if ($line !~ /^#/) {
-        #find subnet
-        if ($line =~ /.\//) {
-            my ($subnet, $bitmask) = split(/\//, $line);
-            print "net - $subnet; mask - $bitmask";
-			calcSubnet($subnet, $bitmask);
-        }
         my ($address, $description) = split(" ", $line);
-	    print "$address\n";
-	    ping($address, $description);
+		#find subnet
+        if ($address =~ /.\//) {
+            my ($subnet, $bitmask) = split(/\//, $address);
+			calcSubnet($subnet, $bitmask, $description);
+        } else {
+			ping($address, $description);
+		}
     }
 }
 
 sub ping {
-	if ($net->ping($_[0], 5)) {
+	if ($net->ping($_[0], $time_out)) {
 		if ($show_connected == 1) {
 			print "$_[0]($_[1])\t now is UP\n";
 		}
@@ -76,19 +69,22 @@ sub ping {
 
 sub calcSubnet {
 	my ($first_octet, $second_octet, $third_octet, $fourth_octet) = split(/\./, $_[0]);
-	
+	my $description = $_[2];
+ 	
+	#patterns for find values in octets 
 	my $pattern = 0b11111111111111111111111111111111;
 	my $pattern_second_octet = 0b11111111000000000000000000000000;
 	my $pattern_third_octet = 0b11111111111111110000000000000000;
 	my $pattern_fourth_octet = 0b11111111111111111111111100000000;
 	my $pattern_simple = 0b11111111;
 	
+	#forming mask  
 	my $bitmask = $_[1];
 	my $shift_mask_left = $pattern >> (32 - $bitmask);
 	my $netmask = $shift_mask_left << $bitmask;
 	$netmask = $netmask << (32 - ($bitmask * 2));
-	printf("%b - netmask\n", $netmask);
 	
+	#...and write by octets
 	my @octets = (0b0, 0b0, 0b0, 0b0); 
 	$octets[0] = $netmask >> 24;
 	if ($bitmask > 8) {		
@@ -107,9 +103,11 @@ sub calcSubnet {
 		}
 	} 
 
+	#create arrays for initial and max addresses by subnet
 	my @initial_address = ($first_octet, $second_octet, $third_octet, $fourth_octet);
 	my @max_address = ($first_octet, $second_octet, $third_octet, $fourth_octet);
 	
+	#calculation initial and max address using bitmask previously obtained
 	if ($bitmask < 8) {
 		$initial_address[0] = $initial_address[0] >> (8 - $bitmask);
 		$initial_address[0] = $initial_address[0] << (8 - $bitmask);
@@ -138,10 +136,9 @@ sub calcSubnet {
 		for (my $second = $initial_address[1]; $second <= $max_address[1]; $second = $second + 0b00000001) {
 			for (my $third = $initial_address[2]; $third <= $max_address[2]; $third = $third + 0b00000001) {
 				for (my $fourth = $initial_address[3]; $fourth <= $max_address[3]; $fourth = $fourth + 0b00000001) {
-					#printf ("%d.%d.%d.%d - 1 2 3 4\n", $first, $second, $third, $fourth);
+					#ignore subnet in the array of addresses
 					if (($fourth != $initial_address[3]) || ($third != $initial_address[2] && $third != $initial_address[3]) || ($second != $initial_address[1] && $second != $initial_address[2] && $second != $initial_address[3]) || ($first != $initial_address[0] && $first != $initial_address[1] && $first != $initial_address[2] && $first != $initial_address[3])) {
-						#ping("$first.$second.$third.$fourth");
-						printf ("%d.%d.%d.%d - 1 2 3 4\n", $first, $second, $third, $fourth);
+						ping("$first.$second.$third.$fourth", $description);
 					}
 				}
 			}
